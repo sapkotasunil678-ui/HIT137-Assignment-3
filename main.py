@@ -6,10 +6,6 @@ import random
 from PIL import Image, ImageTk
 
 
-# ============================================================
-# TILE CLASS
-# ============================================================
-
 class Tile:
 
     def __init__(self, image, original_position):
@@ -78,19 +74,11 @@ class Tile:
         )
 
 
-# ============================================================
-# TRANSFORMATION BASE CLASS
-# ============================================================
-
 class Transformation:
 
     def apply(self, tiles, indices):
         raise NotImplementedError
 
-
-# ============================================================
-# SWAP TRANSFORMATION
-# ============================================================
 
 class SwapTransformation(Transformation):
 
@@ -111,10 +99,6 @@ class SwapTransformation(Transformation):
             second
         )
 
-
-# ============================================================
-# ROTATE TRANSFORMATION
-# ============================================================
 
 class RotateTransformation(Transformation):
 
@@ -139,9 +123,6 @@ class RotateTransformation(Transformation):
         )
 
 
-# ============================================================
-# FLIP TRANSFORMATION
-# ============================================================
 
 class FlipTransformation(Transformation):
 
@@ -174,11 +155,6 @@ class FlipTransformation(Transformation):
             direction
         )
 
-
-# ============================================================
-# PUZZLE CLASS
-# ============================================================
-
 class Puzzle:
 
     def __init__(self):
@@ -187,9 +163,6 @@ class Puzzle:
         self.tiles = []
         self.grid_size = 3
 
-    # --------------------------------------------------------
-    # RESIZE IMAGE
-    # --------------------------------------------------------
 
     def resize_image(
         self,
@@ -223,9 +196,7 @@ class Puzzle:
             )
         )
 
-    # --------------------------------------------------------
-    # PAD IMAGE TO SQUARE
-    # --------------------------------------------------------
+
 
     def pad_to_square(
         self,
@@ -235,15 +206,11 @@ class Puzzle:
 
         height, width = image.shape[:2]
 
-        # Keep the complete resized image.  Padding instead of
-        # cropping preserves the original aspect ratio/content.
         square_side = max(
             height,
             width
         )
-
-        # Make the final dimensions divide evenly by the chosen
-        # grid size (3x3, 4x4 or 5x5).
+        
         remainder = (
             square_side % size
         )
@@ -279,9 +246,6 @@ class Puzzle:
             value=(240, 240, 240)
         )
 
-    # --------------------------------------------------------
-    # CREATE TILES
-    # --------------------------------------------------------
 
     def create_tiles(self):
 
@@ -331,13 +295,9 @@ class Puzzle:
 
                 position += 1
 
-    # --------------------------------------------------------
-    # SCRAMBLE
-    # --------------------------------------------------------
 
     def scramble(self):
 
-        # Required number of transformations for each grid size
         transformation_counts = {
             3: 6,
             4: 12,
@@ -347,10 +307,7 @@ class Puzzle:
         transformation_count = transformation_counts[
             self.grid_size
         ]
-
-        # One swap uses two different tiles.
-        # Every later transformation uses one new tile.
-        # Therefore N transformations need N + 1 unique tiles.
+        
         selected = random.sample(
             range(len(self.tiles)),
             transformation_count + 1
@@ -359,7 +316,6 @@ class Puzzle:
         used = set()
         transformations_done = 0
 
-        # Guarantee one Swap transformation
         first = selected[0]
         second = selected[1]
 
@@ -371,8 +327,6 @@ class Puzzle:
         used.add(first)
         used.add(second)
         transformations_done += 1
-
-        # Guarantee one Rotate transformation
         rotate_index = selected[2]
 
         RotateTransformation().apply(
@@ -393,10 +347,7 @@ class Puzzle:
 
         used.add(flip_index)
         transformations_done += 1
-
-        # Complete the remaining required transformations.
-        # Each remaining tile is targeted only once.
-        for tile_index in selected[4:]:
+    for tile_index in selected[4:]:
 
             transformation = random.choice(
                 [
@@ -411,21 +362,17 @@ class Puzzle:
             )
 
             used.add(tile_index)
-            transformations_done += 1
+ transformations_done += 1
 
-        print(
+    print(
             "Total transformations:",
             transformations_done
         )
 
-        print(
+    print(
             "Total targeted tiles:",
             len(used)
         )
-
-    # --------------------------------------------------------
-    # PLAYER SWAP
-    # --------------------------------------------------------
 
     def swap_tiles(
         self,
@@ -445,9 +392,6 @@ class Puzzle:
             second
         )
 
-    # --------------------------------------------------------
-    # PLAYER ROTATE
-    # --------------------------------------------------------
 
     def rotate_tile_clockwise(
         self,
@@ -464,9 +408,6 @@ class Puzzle:
             "90 degrees clockwise"
         )
 
-    # --------------------------------------------------------
-    # PLAYER FLIP
-    # --------------------------------------------------------
 
     def flip_tile_horizontal(
         self,
@@ -483,9 +424,6 @@ class Puzzle:
             "horizontal"
         )
 
-    # --------------------------------------------------------
-    # CHECK TILE
-    # --------------------------------------------------------
 
     def tile_is_correct(
         self,
@@ -510,9 +448,6 @@ class Puzzle:
             and correct_orientation
         )
 
-    # --------------------------------------------------------
-    # COUNT INCORRECT TILES
-    # --------------------------------------------------------
 
     def count_incorrect_tiles(self):
 
@@ -529,9 +464,6 @@ class Puzzle:
 
         return incorrect
 
-    # --------------------------------------------------------
-    # CHECK COMPLETE
-    # --------------------------------------------------------
 
     def is_complete(self):
 
@@ -540,9 +472,6 @@ class Puzzle:
             == 0
         )
 
-    # --------------------------------------------------------
-    # FIND HINT
-    # --------------------------------------------------------
 
     def get_hint(self):
 
@@ -565,8 +494,6 @@ class Puzzle:
                     position
                 ]
 
-                # Prefer a tile that is actually
-                # in the wrong grid position
                 if (
                     tile.original_position
                     != position
@@ -576,12 +503,9 @@ class Puzzle:
                         position
                     )
 
-        # Puzzle already complete
         if not incorrect_positions:
             return None
 
-        # Prefer a misplaced tile.
-        # This keeps C and H on different squares.
         if misplaced_positions:
 
             current_position = random.choice(
@@ -590,8 +514,6 @@ class Puzzle:
 
         else:
 
-            # If every tile is in its correct position,
-            # remaining problem is rotation/flip.
             current_position = random.choice(
                 incorrect_positions
             )
@@ -608,18 +530,13 @@ class Puzzle:
             current_position,
             home_position
         )
-    # --------------------------------------------------------
-    # SOLVE PUZZLE
-    # --------------------------------------------------------
 
     def solve(self):
 
-        # Put every tile back in its original position
         self.tiles.sort(
             key=lambda tile: tile.original_position
         )
 
-        # Remove all rotations and flips
         for tile in self.tiles:
             tile.reset()
 
@@ -627,9 +544,6 @@ class Puzzle:
             "PUZZLE SOLVED AUTOMATICALLY"
         )
 
-    # --------------------------------------------------------
-    # REASSEMBLE
-    # --------------------------------------------------------
 
     def reassemble(self):
 
@@ -669,9 +583,6 @@ class Puzzle:
             rows
         )
 
-    # --------------------------------------------------------
-    # DRAW GRID + TICKS + SELECTION + HINT
-    # --------------------------------------------------------
 
     def draw_grid(
         self,
@@ -693,8 +604,6 @@ class Puzzle:
         tile_width = (
             width // self.grid_size
         )
-
-        # ---------------- GRID ----------------
 
         for column in range(
             1,
@@ -729,8 +638,6 @@ class Puzzle:
                 (100, 100, 100),
                 1
             )
-
-        # ---------------- GREEN TICKS ----------------
 
         for index in range(
             len(self.tiles)
@@ -773,8 +680,6 @@ class Puzzle:
                     cv2.LINE_AA
                 )
 
-        # ---------------- SELECTED TILE ----------------
-
         if selected_index is not None:
 
             row = (
@@ -815,7 +720,6 @@ class Puzzle:
                 4
             )
 
-        # ---------------- HINT CIRCLES ----------------
 
         if hint_positions is not None:
 
@@ -850,7 +754,7 @@ class Puzzle:
                 + tile_height // 2
             )
 
-            # Home position
+            
             home_row = (
                 home_position
                 // self.grid_size
@@ -881,8 +785,6 @@ class Puzzle:
                 ) // 5
             )
 
-            # If the tile is already in its home position,
-            # the remaining problem is its orientation.
             if current_position == home_position:
 
                 cv2.circle(
@@ -896,7 +798,6 @@ class Puzzle:
                     4
                 )
 
-                # R/F = Rotate or Flip this tile
                 cv2.putText(
                     display,
                     "R/F",
@@ -913,7 +814,6 @@ class Puzzle:
 
             else:
 
-                # C = Current position
                 cv2.circle(
                     display,
                     (
@@ -939,7 +839,6 @@ class Puzzle:
                     cv2.LINE_AA
                 )
 
-                # H = Home position
                 cv2.circle(
                     display,
                     (
@@ -967,9 +866,6 @@ class Puzzle:
 
         return display
 
-    # --------------------------------------------------------
-    # LOAD IMAGE
-    # --------------------------------------------------------
 
     def load_image(
         self,
@@ -1019,11 +915,6 @@ class Puzzle:
 
         return True
 
-
-# ============================================================
-# GUI CLASS
-# ============================================================
-
 class PuzzleApp:
 
     def __init__(
@@ -1055,15 +946,11 @@ class PuzzleApp:
         self.moves = 0
         self.game_complete = False
 
-        # Hint variables
         self.hints_left = 3
         self.active_hint = None
 
         self.create_widgets()
 
-    # --------------------------------------------------------
-    # CREATE GUI
-    # --------------------------------------------------------
 
     def create_widgets(self):
 
@@ -1096,7 +983,6 @@ class PuzzleApp:
                 padx=10
             )
 
-        # ---------------- BUTTONS ----------------
 
         button_frame = tk.Frame(
             self.root
@@ -1139,7 +1025,6 @@ class PuzzleApp:
             padx=10
         )
 
-        # ---------------- STATUS ----------------
 
         status_frame = tk.Frame(
             self.root
@@ -1194,7 +1079,6 @@ class PuzzleApp:
             padx=20
         )
 
-        # ---------------- IMAGE AREA ----------------
 
         image_frame = tk.Frame(
             self.root
@@ -1204,7 +1088,6 @@ class PuzzleApp:
             pady=15
         )
 
-        # Original image side
         original_frame = tk.Frame(
             image_frame
         )
@@ -1225,7 +1108,6 @@ class PuzzleApp:
 
         self.original_label.pack()
 
-        # Puzzle image side
         puzzle_frame = tk.Frame(
             image_frame
         )
@@ -1246,21 +1128,16 @@ class PuzzleApp:
 
         self.puzzle_label.pack()
 
-        # Left click
         self.puzzle_label.bind(
             "<Button-1>",
             self.on_left_click
         )
 
-        # Right click
+        
         self.puzzle_label.bind(
             "<Button-3>",
             self.on_right_click
         )
-
-    # --------------------------------------------------------
-    # DISPLAY IMAGE
-    # --------------------------------------------------------
 
     def display_image(
         self,
@@ -1282,9 +1159,6 @@ class PuzzleApp:
 
         label.image = photo
 
-    # --------------------------------------------------------
-    # FIND CLICKED TILE
-    # --------------------------------------------------------
 
     def get_clicked_tile(
         self,
@@ -1332,9 +1206,7 @@ class PuzzleApp:
             + column
         )
 
-    # --------------------------------------------------------
-    # LEFT CLICK
-    # --------------------------------------------------------
+
 
     def on_left_click(
         self,
@@ -1352,13 +1224,9 @@ class PuzzleApp:
 
         if tile_index is None:
             return
-
-        # Check if Shift key is held
         shift_pressed = bool(
             event.state & 0x0001
         )
-
-        # ---------------- SHIFT + LEFT = FLIP ----------------
 
         if shift_pressed:
 
@@ -1370,14 +1238,12 @@ class PuzzleApp:
 
             self.selected_tile = None
 
-            # Hint disappears after move
             self.active_hint = None
 
             self.after_move()
 
             return "break"
 
-        # ---------------- NORMAL LEFT CLICK ----------------
 
         if self.selected_tile is None:
 
@@ -1417,7 +1283,6 @@ class PuzzleApp:
 
             self.moves += 1
 
-            # Hint disappears after move
             self.active_hint = None
 
             self.after_move()
@@ -1426,9 +1291,6 @@ class PuzzleApp:
 
         self.refresh_puzzle()
 
-    # --------------------------------------------------------
-    # RIGHT CLICK = ROTATE
-    # --------------------------------------------------------
 
     def on_right_click(
         self,
@@ -1459,10 +1321,6 @@ class PuzzleApp:
         self.active_hint = None
 
         self.after_move()
-
-    # --------------------------------------------------------
-    # HINT BUTTON
-    # --------------------------------------------------------
 
     def show_hint(self):
 
@@ -1528,9 +1386,6 @@ class PuzzleApp:
                 state=tk.DISABLED
             )
 
-    # --------------------------------------------------------
-    # SOLVE BUTTON
-    # --------------------------------------------------------
 
     def solve_puzzle(self):
 
@@ -1540,22 +1395,16 @@ class PuzzleApp:
         if self.game_complete:
             return
 
-        # Solve all tiles
         self.puzzle.solve()
 
-        # Solve clears moves / score
         self.moves = 0
 
-        # Remove selected tile
         self.selected_tile = None
 
-        # Remove active hint
         self.active_hint = None
 
-        # Mark puzzle complete
         self.game_complete = True
 
-        # Disable buttons
         self.hint_button.config(
             state=tk.DISABLED
         )
@@ -1564,17 +1413,12 @@ class PuzzleApp:
             state=tk.DISABLED
         )
 
-        # Update screen
         self.update_status()
         self.refresh_puzzle()
 
         print(
             "Solve button used"
         )
-
-    # --------------------------------------------------------
-    # AFTER PLAYER MOVE
-    # --------------------------------------------------------
 
     def after_move(self):
 
@@ -1604,9 +1448,6 @@ class PuzzleApp:
                 f"{self.moves} moves."
             )
 
-    # --------------------------------------------------------
-    # UPDATE STATUS
-    # --------------------------------------------------------
 
     def update_status(self):
 
@@ -1626,16 +1467,11 @@ class PuzzleApp:
             text=f"Hints Left: {self.hints_left}"
         )
 
-    # --------------------------------------------------------
-    # REFRESH ORIGINAL IMAGE
-    # --------------------------------------------------------
 
     def refresh_original(self):
 
         original_display = self.puzzle.original_image.copy()
 
-        # Assignment requirement: when a hint is active, mark the
-        # tile's correct HOME position on the ORIGINAL image.
         if self.active_hint is not None:
             home_position = self.active_hint[1]
             height, width = original_display.shape[:2]
@@ -1671,10 +1507,6 @@ class PuzzleApp:
             self.original_label
         )
 
-    # --------------------------------------------------------
-    # REFRESH PUZZLE
-    # --------------------------------------------------------
-
     def refresh_puzzle(self):
 
         self.refresh_original()
@@ -1696,10 +1528,6 @@ class PuzzleApp:
             self.puzzle_label
         )
 
-    # --------------------------------------------------------
-    # LOAD IMAGE
-    # --------------------------------------------------------
-
     def load_image(self):
 
         file_path = (
@@ -1713,7 +1541,6 @@ class PuzzleApp:
             )
         )
 
-        # User cancelled dialog
         if not file_path:
             return
 
@@ -1737,7 +1564,6 @@ class PuzzleApp:
 
             return
 
-        # Reset game state
         self.moves = 0
 
         self.selected_tile = None
@@ -1746,12 +1572,12 @@ class PuzzleApp:
 
         self.image_loaded = True
 
-        # Reset hints
+
         self.hints_left = 3
 
         self.active_hint = None
 
-        # Enable buttons
+
         self.hint_button.config(
             state=tk.NORMAL
         )
@@ -1767,10 +1593,10 @@ class PuzzleApp:
 
         self.puzzle.scramble()
 
-        # Show original image
+
         self.refresh_original()
 
-        # Show puzzle
+        
         self.update_status()
         self.refresh_puzzle()
 
@@ -1796,11 +1622,6 @@ class PuzzleApp:
             "Tiles left:",
             self.puzzle.count_incorrect_tiles()
         )
-
-
-# ============================================================
-# START PROGRAM
-# ============================================================
 
 if __name__ == "__main__":
 
